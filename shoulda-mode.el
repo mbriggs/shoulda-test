@@ -322,7 +322,7 @@ as the value of the symbol, and the hook as the function definition."
      old)))
 
 (add-to-list 'compilation-error-regexp-alist-alist 
-	     '(shoulda "\\([0-9A-Za-z_./\:-]+\\.rb\\):\\([0-9]+\\)" 1 2))
+	     '(shoulda "^ +\\[?\\([0-9A-Za-z_./\:-]+\\.rb\\):\\([0-9]+\\)" 1 2))
 (add-to-list 'compilation-error-regexp-alist 'shoulda)
 
 

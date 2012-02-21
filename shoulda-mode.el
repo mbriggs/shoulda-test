@@ -1,6 +1,7 @@
 ;; Shoulda-Mode
 ;;
-;; modified version, based on the one written by Peter Williams
+;; by Matt Briggs
+;; based on the one written by Peter Williams
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -22,28 +23,15 @@
   :type 'string
   :group 'shoulda-mode)
 
-(defun shoulda-beginning-of-example ()
-  "Moves point to the beginning of the example in which the point current is."
-  (interactive)
-  (let ((start (point)))
-    (goto-char
-     (save-excursion
-       (end-of-line)
-       (unless (and (search-backward-regexp "^[[:space:]]*should[[:space:]]*(?[\"']" nil t)
-                    (save-excursion (ruby-end-of-block) (< start (point))))
-         (error "Unable to find an example"))
-       (point)))))
-
-
 (defun shoulda-verify ()
   "Runs the specified spec, or the spec file for the current buffer."
   (interactive)
-  (shoulda-run-single-file (shoulda-spec-file-for (shoulda-test-file))))
+  (shoulda-run-single-file (shoulda-test-file)))
 
 (defun shoulda-verify-single ()
   "Runs the specified example at the point of the current buffer."
   (interactive)
-  (shoulda-run-single-file (shoulda-test-file) "-n" (shoulda-regexp-for-example (shoulda-example-name-at-point))))
+  (shoulda-run-single-file (shoulda-test-file) "-n" (shoulda-regexp-for-example (shoulda-test-name-at-point))))
 
 (defun shoulda-test-file ()
   (replace-regexp-in-string (concat "^" (eproject-root))
@@ -53,82 +41,7 @@
   "Converts example name into a regexp that matched the example name, escaping all regexp special characters"
   (concat "\"/" (replace-regexp-in-string "[]\\[/\\(\\)+?.]" (lambda (m) (concat "\\\\\\\\\\\\\\\\" m)) example-name) "/\""))
 
-(defun shoulda-toggle-spec-and-target ()
-  "Switches to the spec for the current buffer if it is a
-   non-spec file, or switch to the target of the current buffer
-   if the current is a spec"
-  (interactive)
-  (find-file
-   (if (shoulda-buffer-is-spec-p)
-       (shoulda-target-file-for (buffer-file-name))
-     (shoulda-spec-file-for (buffer-file-name)))))
-
-(defun shoulda-spec-file-for (a-file-name)
-  "Find spec for the specified file"
-  (if (shoulda-spec-file-p a-file-name)
-      a-file-name
-    (shoulda-specize-file-name (expand-file-name (replace-regexp-in-string "^\\.\\./[^/]+/" "" (file-relative-name a-file-name (shoulda-spec-directory a-file-name)))
-                                               (shoulda-spec-directory a-file-name)))))
-
-(defun shoulda-target-file-for (a-spec-file-name)
-  "Find the target for a-spec-file-name"
-  (first
-   (file-expand-wildcards
-    (replace-regexp-in-string "/test/" "/*/" (shoulda-targetize-file-name a-spec-file-name)))))
-
-(defun shoulda-specize-file-name (a-file-name)
-  "Returns a-file-name but converted in to a spec file name"
-  (concat
-   (file-name-directory a-file-name)
-   (replace-regexp-in-string "\\(\\.rb\\)?$" "_test.rb" (file-name-nondirectory a-file-name))))
-
-(defun shoulda-targetize-file-name (a-file-name)
-  "Returns a-file-name but converted into a non-spec file name"
-     (concat (file-name-directory a-file-name)
-             (shoulda-file-name-with-default-extension
-              (replace-regexp-in-string "_test\\.rb" "" (file-name-nondirectory a-file-name)))))
-
-(defun shoulda-file-name-with-default-extension (a-file-name)
-  "Adds .rb file extension to a-file-name if it does not already have an extension"
-  (if (file-name-extension a-file-name)
-      a-file-name ;; file has a extension already so do nothing
-    (concat a-file-name ".rb")))
-
-(defun shoulda-directory-subdirectories (directory)
-  "Returns list of subdirectories"
-  (remove-if
-   (lambda (dir) (or (string-match "^\\.\\.?$" (file-name-nondirectory dir))
-                     (not (file-directory-p dir))))
-   (directory-files directory t)))
-
-(defun shoulda-parent-directory (a-directory)
-  "Returns the directory of which a-directory is a child"
-  (file-name-directory (directory-file-name a-directory)))
-
-(defun shoulda-root-directory-p (a-directory)
-  "Returns t if a-directory is the root"
-  (equal a-directory (shoulda-parent-directory a-directory)))
-
-(defun shoulda-spec-directory (a-file)
-  "Returns the nearest spec directory that could contain specs for a-file"
-  (if (file-directory-p a-file)
-      (or
-       (first (directory-files a-file t "^spec$"))
-       (if (shoulda-root-directory-p a-file)
-           nil
-         (shoulda-spec-directory (shoulda-parent-directory a-file))))
-    (shoulda-spec-directory (shoulda-parent-directory a-file))))
-
-(defun shoulda-spec-file-p (a-file-name)
-  "Returns true if the specified file is a spec"
-  (string-match "\\(_\\|-\\)test\\.rb$" a-file-name))
-
-(defun shoulda-buffer-is-spec-p ()
-  "Returns true if the current buffer is a spec"
-  (and (buffer-file-name)
-       (shoulda-spec-file-p (buffer-file-name))))
-
-(defun shoulda-example-name-at-point ()
+(defun shoulda-test-name-at-point ()
   "Returns the name of the example in which the point is currently positioned; or nil if it is outside of and example"
   (save-excursion
     (end-of-line)
@@ -138,7 +51,7 @@
 (defun shoulda-register-verify-redo (redoer)
   "Register a bit of code that will repeat a verification process"
   (let ((redoer-cmd (eval (append '(lambda () (interactive)) (list redoer)))))
-    (define-key evil-normal-state-map (kbd ",tr") redoer-cmd)))
+    (define-key evil-normal-state-map (kbd ",tl") redoer-cmd)))
 
 (defun shoulda-run-single-file (test-file &rest opts)
   "Runs test with the specified options"

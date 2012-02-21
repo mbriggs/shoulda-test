@@ -96,4 +96,4 @@
 (add-to-list 'compilation-error-regexp-alist 'shoulda)
 
 
-(provide 'shoulda-mode)
+(provide 'shoulda-test)

@@ -1,7 +1,18 @@
-;; Shoulda-Mode
+;; shoulda-test
 ;;
 ;; by Matt Briggs
-;; based on the one written by Peter Williams
+;; based on shoulda-mode by Peter Williams
+;;
+;;
+;; Greatly reducing the scope of the plugin to do two things
+;;
+;; should-verify: run the test file you are currently on
+;; should-verify-single: run the test that contains the point
+;;
+;; currently supports def test_ and should "" do syntaxs, but doesn't
+;; support test "" do yet
+;;
+;; eventually I want to integrate this with github.com/mbriggs/rails-test-toggler
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -80,7 +91,7 @@
 
 
 (add-to-list 'compilation-error-regexp-alist-alist
-             '(shoulda "\\[?\\(test/\\(?:unit\\|functional\\)[0-9A-Za-z_./\:-]+\\.rb\\):\\([0-9]+\\)" 1 2))
+             '(shoulda "^[^DEPRECATION].*\\[?\\(test/\\(?:unit\\|functional\\)[0-9A-Za-z_./\:-]+\\.rb\\):\\([0-9]+\\)" 1 2))
 
 (add-to-list 'compilation-error-regexp-alist 'shoulda)
 
